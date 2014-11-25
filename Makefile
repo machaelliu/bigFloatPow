@@ -1,6 +1,8 @@
 .PHONE: all clean
 
+# variables definition
 CPPFLAGS = -c -Wall
+
 all: b.exe
 
 b.exe : main.o big_float.o
