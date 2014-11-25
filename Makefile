@@ -13,5 +13,5 @@ main.o: main.c
 	g++ $(CPPFLAGS) -o $@ $^
 
 clean:
-	-rm -rf *.o *.exe *.out 2>/dev/null
+	-rm -rf *.~vsd *.o *.exe *.out 2>/dev/null
 
