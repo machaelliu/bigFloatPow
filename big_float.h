@@ -63,7 +63,7 @@ namespace n_big_float
 
         private:
         bool formalize(string);
-        string addBigInt(const string &num1, const string &num2, bool &hasCarry)
+        string addMant(const string &num1, const string &num2)
     };
 
     // ÊäÈëÊä³ö²Ù×÷·û

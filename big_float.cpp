@@ -2,51 +2,6 @@
 
 namespace n_big_float
 {
-    // 浮点尾数相加，相当于右对齐相加
-    string BigFloat::addBigInt(const string &num1, const string &num2, bool &hasCarry)
-    {
-
-        hasCarry= false;
-        int carry = 0;
-        string::size_type size1 = num1.size();
-
-        string::size_type size2 = num2.size();
-        string::size_type size = 0; 
-        string::size_type lZeroNums = 0; // 较短的数要补的前导 0 的个数
-        if (size1 > size2)
-        {
-            lZeroNums = size1 - size2;
-            string zeros(lZeroNums, '0');
-            num2 = zeros + num2;
-            size = size1;
-        }
-        else
-        {
-            lZeroNums = size2 - size1;
-            string zeros(lZeroNums, '0');
-            num2 = zeros + num1;
-            size = size2;
-        }
-
-        string sum(num1);
-
-        // 长度相同的两数相加
-        for (string::size_type ix = size; ix >= 0; --ix)
-        {
-            sum[ix] += num2[ix] - '0' + carry;
-            if (sum[ix] > '9')
-            {
-                sum[ix] -= 10;
-                carry = 1;
-            }
-        }
-
-        if (1 == carry)
-        {
-
-        }
-
-    }
 
     // 检查给定参数是否合法，若合法则规格化，参数不能是引用，因为可能会对 digits 
     // 本身规格化
@@ -74,6 +29,7 @@ namespace n_big_float
         sign = givenSign;
 
         string::size_type dotIx = strNum.find('.', numBegIx);
+
 
         // 以小数点结尾(包含了数字部分只含小数点的情况)，数字非法
         if (dotIx == str_size - 1)
@@ -279,6 +235,83 @@ namespace n_big_float
         return true;
     } // end of formalize
 
+    // 浮点尾数相加，相当于右对齐相加
+    string BigFloat::addMant(const string &num1, const string &num2)
+    {
+
+        int carry = 0;
+        string::size_type size1 = num1.size();
+
+        string::size_type size2 = num2.size();
+        string::size_type size = 0; 
+        string::size_type lZeroNums = 0; // 较短的数要补的前导 0 的个数
+        if (size1 > size2)
+        {
+            lZeroNums = size1 - size2;
+            string zeros(lZeroNums, '0');
+            num2 = zeros + num2;
+            size = size1;
+        }
+        else
+        {
+            lZeroNums = size2 - size1;
+            string zeros(lZeroNums, '0');
+            num2 = zeros + num1;
+            size = size2;
+        }
+
+        string sum(num1);
+
+        // 长度相同的两数相加
+        for (string::size_type ix = size; ix >= 0; --ix)
+        {
+            sum[ix] += num2[ix] - '0' + carry;
+            if (sum[ix] > '9')
+            {
+                sum[ix] -= 10;
+                carry = 1;
+            }
+        }
+
+        if (1 == carry)
+        {
+            sum = "1" + sum;
+            return sum;
+        }
+        else
+        {
+            return sum;
+        }
+    }
+
+    // 尾数乘以一位整数
+    string BigFloat::mulOneBig(const string &mant, char bit)
+    {
+        int carry = 0;
+        bit -= '0';
+        string prdt;
+
+        for (const string::reverse_iterator iter = mant.rbegin();
+                iter != mant.rend(); ++iter)
+        {
+            *iter -= '0';
+            int bitPrdt = *iter * bit + carry;
+            prdt += bitPrdt % 10 + '0';
+            carry = bitPrdt / 10;
+        }
+
+        if (0 != carry)
+        {
+            prdt += carry + '0';
+        }
+
+        reverse(prdt.begin(), prdt.end());
+
+        return prdt;
+    }
+
+
+    // 输入操作符重载
     ostream& operator<<(ostream& os, const BigFloat &bigNum)
     {
         if (1 == bigNum.digits.size())
