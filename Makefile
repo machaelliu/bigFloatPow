@@ -3,6 +3,7 @@
 # variables definition
 CPPFLAGS = -c -Wall
 
+# rules
 all: b.exe
 
 b.exe : main.o big_float.o
