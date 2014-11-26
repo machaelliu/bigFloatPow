@@ -20,6 +20,7 @@ namespace n_big_float
     {
         friend ostream &operator<<(ostream &os, const BigFloat &bigNum);
         friend istream &operator>>(istream &is, BigFloat &bigNum);
+        friend bool operator==(const BigFloat &bigNum1, const BigFloat &bigNum2);
 
         public:
         BigFloat():sign('+'), digits("0"), exp(0)
@@ -58,12 +59,14 @@ namespace n_big_float
         // 指数，范围为 [-MAX_EXP, +MAX_EXP]，超过这个范围认为是正无穷和负无穷
         int exp; 
 
-        static const int MAX_EXP = 3;
+        static const int MAX_EXP = 500;
         static const string::size_type MAX_MANT_LEN = 500;
 
         private:
         bool formalize(string);
-        string addMant(const string &num1, const string &num2)
+        public:
+        static string addMant(const string &num1, const string &num2);
+        string mulOneBit(char bit);
     };
 
     // 输入输出操作符

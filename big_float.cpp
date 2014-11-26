@@ -239,33 +239,35 @@ namespace n_big_float
     string BigFloat::addMant(const string &num1, const string &num2)
     {
 
-        int carry = 0;
         string::size_type size1 = num1.size();
 
         string::size_type size2 = num2.size();
         string::size_type size = 0; 
         string::size_type lZeroNums = 0; // 较短的数要补的前导 0 的个数
+        string sum;
+        string longerNum;
         if (size1 > size2)
         {
             lZeroNums = size1 - size2;
             string zeros(lZeroNums, '0');
-            num2 = zeros + num2;
+            sum = zeros + num2;
+            longerNum = num1;
             size = size1;
         }
         else
         {
             lZeroNums = size2 - size1;
             string zeros(lZeroNums, '0');
-            num2 = zeros + num1;
+            sum = zeros + num1;
+            longerNum = num2;
             size = size2;
         }
 
-        string sum(num1);
-
+        int carry = 0;
         // 长度相同的两数相加
         for (string::size_type ix = size; ix >= 0; --ix)
         {
-            sum[ix] += num2[ix] - '0' + carry;
+            sum[ix] += longerNum[ix] - '0' + carry;
             if (sum[ix] > '9')
             {
                 sum[ix] -= 10;
@@ -285,17 +287,16 @@ namespace n_big_float
     }
 
     // 尾数乘以一位整数
-    string BigFloat::mulOneBig(const string &mant, char bit)
+    string BigFloat::mulOneBit(char bit)
     {
         int carry = 0;
         bit -= '0';
         string prdt;
 
-        for (const string::reverse_iterator iter = mant.rbegin();
-                iter != mant.rend(); ++iter)
+        for (string::const_reverse_iterator iter = digits.rbegin();
+                iter != digits.rend(); ++iter)
         {
-            *iter -= '0';
-            int bitPrdt = *iter * bit + carry;
+            int bitPrdt = (*iter - '0') * bit + carry;
             prdt += bitPrdt % 10 + '0';
             carry = bitPrdt / 10;
         }
@@ -305,7 +306,16 @@ namespace n_big_float
             prdt += carry + '0';
         }
 
-        reverse(prdt.begin(), prdt.end());
+        // 将 prdt 反向
+        char aBit;
+        string::size_type forwardIx = 0;
+        string::size_type backwardIx = prdt.size();
+        while (forwardIx < backwardIx)
+        {
+            aBit = prdt[backwardIx];
+            prdt[backwardIx] = prdt[forwardIx];
+            prdt[forwardIx] = aBit;
+        }
 
         return prdt;
     }

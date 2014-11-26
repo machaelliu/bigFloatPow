@@ -6,13 +6,13 @@ CPPFLAGS = -c -Wall
 # rules
 all: b.exe
 
-b.exe : main.o big_float.o
-	g++ -o @$ $^
+b.exe : test.o big_float.o
+	g++ -o $@ $^
 	
 big_float.o: big_float.cpp big_float.h
-	g++ $(CPPFLAGS) -o $@ $^
+	g++ $(CPPFLAGS) -o $@ $<
 
-main.o: main.c
+test.o: test.cpp
 	g++ $(CPPFLAGS) -o $@ $^
 
 clean:
