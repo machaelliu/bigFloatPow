@@ -238,11 +238,13 @@ namespace n_big_float
     // 浮点尾数相加，相当于右对齐相加
     string BigFloat::addMant(const string &num1, const string &num2)
     {
+#ifdef DEBUG
+        cout << "in addMant: " << endl;
+#endif
 
         string::size_type size1 = num1.size();
 
         string::size_type size2 = num2.size();
-        string::size_type size = 0; 
         string::size_type lZeroNums = 0; // 较短的数要补的前导 0 的个数
         string sum;
         string longerNum;
@@ -252,7 +254,10 @@ namespace n_big_float
             string zeros(lZeroNums, '0');
             sum = zeros + num2;
             longerNum = num1;
-            size = size1;
+#ifdef DEBUG
+        cout << "sum = " << sum << endl;
+#endif
+
         }
         else
         {
@@ -260,19 +265,34 @@ namespace n_big_float
             string zeros(lZeroNums, '0');
             sum = zeros + num1;
             longerNum = num2;
-            size = size2;
+#ifdef DEBUG
+        cout << "sum = " << sum << endl;
+#endif
+
         }
 
         int carry = 0;
+#ifdef DEBUG
+        cout << "size = " << sum.size() << endl;
+#endif
         // 长度相同的两数相加
-        for (string::size_type ix = size; ix >= 0; --ix)
+        string::size_type ix = sum.size() - 1;
+        for (string::reverse_iterator iter = sum.rbegin(); 
+                iter != sum.rend(); ++iter, --ix)
         {
-            sum[ix] += longerNum[ix] - '0' + carry;
-            if (sum[ix] > '9')
+            *iter += longerNum[ix] - '0' + carry;
+            if (*iter > '9')
             {
-                sum[ix] -= 10;
+                *iter -= 10;
                 carry = 1;
             }
+            else
+            {
+                carry = 0;
+            }
+#ifdef DEBUG
+        cout << *iter << endl;
+#endif
         }
 
         if (1 == carry)

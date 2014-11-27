@@ -4,7 +4,9 @@
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
+#include "debug.h"
 using namespace std;
+
 namespace n_big_float
 {
 
@@ -18,6 +20,9 @@ namespace n_big_float
      ****************************************************************************/
     class BigFloat
     {
+#ifdef DEBUG
+        friend int main(void);
+#endif
         friend ostream &operator<<(ostream &os, const BigFloat &bigNum);
         friend istream &operator>>(istream &is, BigFloat &bigNum);
         friend bool operator==(const BigFloat &bigNum1, const BigFloat &bigNum2);
