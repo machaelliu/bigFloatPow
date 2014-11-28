@@ -20,9 +20,6 @@ namespace n_big_float
      ****************************************************************************/
     class BigFloat
     {
-#ifdef DEBUG
-        friend int main(void);
-#endif
         friend ostream &operator<<(ostream &os, const BigFloat &bigNum);
         friend istream &operator>>(istream &is, BigFloat &bigNum);
         friend bool operator==(const BigFloat &bigNum1, const BigFloat &bigNum2);
@@ -69,7 +66,6 @@ namespace n_big_float
 
         private:
         bool formalize(string);
-        public:
         static string addMant(const string &num1, const string &num2);
         string mulOneBit(char bit);
     };

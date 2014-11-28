@@ -241,6 +241,22 @@ namespace n_big_float
 #ifdef DEBUG
         cout << "in addMant: " << endl;
 #endif
+        // 检查参数
+        for (string::size_type ix = 0; ix != num1.size(); ++ix)
+        {
+            if (num1[ix] > '9' || num1[ix] < '0')
+            {
+                return "";
+            }
+        }
+
+        for (string::size_type ix = 0; ix != num2.size(); ++ix)
+        {
+            if (num2[ix] > '9' || num2[ix] < '0')
+            {
+                return "";
+            }
+        }
 
         string::size_type size1 = num1.size();
 
@@ -265,10 +281,6 @@ namespace n_big_float
             string zeros(lZeroNums, '0');
             sum = zeros + num1;
             longerNum = num2;
-#ifdef DEBUG
-        cout << "sum = " << sum << endl;
-#endif
-
         }
 
         int carry = 0;
@@ -290,9 +302,6 @@ namespace n_big_float
             {
                 carry = 0;
             }
-#ifdef DEBUG
-        cout << *iter << endl;
-#endif
         }
 
         if (1 == carry)
@@ -309,6 +318,11 @@ namespace n_big_float
     // 尾数乘以一位整数
     string BigFloat::mulOneBit(char bit)
     {
+        if (bit > '9' || bit < '0')
+        {
+            return "";
+        }
+
         int carry = 0;
         bit -= '0';
         string prdt;
@@ -316,6 +330,9 @@ namespace n_big_float
         for (string::const_reverse_iterator iter = digits.rbegin();
                 iter != digits.rend(); ++iter)
         {
+#ifdef DEBUG
+            cout << *iter << endl;
+#endif
             int bitPrdt = (*iter - '0') * bit + carry;
             prdt += bitPrdt % 10 + '0';
             carry = bitPrdt / 10;
@@ -325,16 +342,21 @@ namespace n_big_float
         {
             prdt += carry + '0';
         }
+#ifdef DEBUG
+            cout << "before reverse, prdt = " <<  prdt << endl;
+#endif
 
         // 将 prdt 反向
         char aBit;
         string::size_type forwardIx = 0;
-        string::size_type backwardIx = prdt.size();
+        string::size_type backwardIx = prdt.size() - 1;
         while (forwardIx < backwardIx)
         {
             aBit = prdt[backwardIx];
             prdt[backwardIx] = prdt[forwardIx];
             prdt[forwardIx] = aBit;
+            ++forwardIx;
+            --backwardIx;
         }
 
         return prdt;

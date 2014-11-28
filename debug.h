@@ -7,4 +7,8 @@
 #endif
 
 #define DEBUG
+
+#ifdef DEBUG
+#define private public
+#endif
 #endif
