@@ -10,5 +10,10 @@
 
 #ifdef DEBUG
 #define private public
+
+//#define T_addBigInt
+//#define T_mulOneBit
+#define T_opMul
+
 #endif
 #endif

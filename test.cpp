@@ -1,25 +1,23 @@
 #include <iostream>
 #include <string>
 #include "big_float.h"
+#include "debug.h"
 using namespace std;
 using namespace n_big_float;
-
-//#define T_addMant
-#define T_mulOneBit
 
 int main(void)
 {
     // 
 
-#ifdef T_addMant
+#ifdef T_addBigInt
     string num1("123");
     string num2("4567");
 
-    string sum = BigFloat::addMant(num1, num2);
+    string sum = addBigInt(num1, num2);
 
     if (sum == "")
     {
-        cerr << "error in addMant" << endl;
+        cerr << "error in addBigInt" << endl;
         return -1;
     }
 
@@ -33,7 +31,7 @@ int main(void)
     cout << "digits = " << bigNum.digits << endl;
     cout << "exp = " << bigNum.exp << endl;
 
-    string resu(bigNum.mulOneBit('8'));
+    string resu(bigNum.mulOneBit('0'));
 
     if ("" == resu)
     {
@@ -41,6 +39,17 @@ int main(void)
         return -1;
     }
     cout << "result is " << resu << endl;
+#endif
+
+#ifdef T_opMul
+
+    BigFloat num1(100);
+    BigFloat num2;
+    cout << "Enter a number : ";
+    cin >> num2;
+    BigFloat prdt = num1 * num2;
+
+    cout << "result is : \n" << prdt << endl;
 #endif
 
     return 0;

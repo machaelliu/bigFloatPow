@@ -2,6 +2,50 @@
 
 namespace n_big_float
 {
+    bool BigFloat::setSign(char sign)
+    {
+        if (sign != '+' && sign != '-')
+        {
+            return false;
+        }
+
+        this->sign = sign;
+        return true;
+    }
+
+    bool BigFloat::setDigits(const string &digits)
+    {
+        if ("INF" == digits)
+        {
+            this->digits = "INF";
+        }
+        else
+        {
+            for (string::size_type ix = 0; ix != digits.size(); ++ix)
+            {
+                if (digits[ix] < '0' || digits[ix] > '9')
+                {
+                    return false;
+                }
+            }
+        }
+        this->digits = digits;
+        return true;
+    }
+
+    bool BigFloat::setExp(const int exp)
+    {
+        if (abs(exp) > MAX_EXP)
+        {
+            return false;
+        }
+        else
+        {
+            this->exp = exp;
+            return true;
+        }
+    }
+
 
     // 检查给定参数是否合法，若合法则规格化，参数不能是引用，因为可能会对 digits 
     // 本身规格化
@@ -70,7 +114,8 @@ namespace n_big_float
                 }
 
                 exp = dotIx - mantFstNotZeroIx + 1;
-                digits = strNum.substr(mantFstNotZeroIx, backNotZeroIx - mantFstNotZeroIx + 1); 
+                digits = strNum.substr(mantFstNotZeroIx, backNotZeroIx 
+                        - mantFstNotZeroIx + 1); 
                 //cout << "backNotZeroIx:" << backNotZeroIx << endl;
                 //cout << "mantFstNotZeroIx:" << mantFstNotZeroIx << endl;
                 //cout << "digits:" << digits << endl;
@@ -235,11 +280,58 @@ namespace n_big_float
         return true;
     } // end of formalize
 
-    // 浮点尾数相加，相当于右对齐相加
-    string BigFloat::addMant(const string &num1, const string &num2)
+    // 尾数乘以一位整数
+    string BigFloat::mulOneBit(char bit) const
     {
-#ifdef DEBUG
-        cout << "in addMant: " << endl;
+        if (bit > '9' || bit < '0')
+        {
+            return "";
+        }
+
+        int carry = 0;
+        bit -= '0';
+        string prdt;
+
+        for (string::const_reverse_iterator iter = digits.rbegin();
+                iter != digits.rend(); ++iter)
+        {
+#ifdef T_mulOneBit
+            cout << *iter << endl;
+#endif
+            int bitPrdt = (*iter - '0') * bit + carry;
+            prdt += bitPrdt % 10 + '0';
+            carry = bitPrdt / 10;
+        }
+
+        if (0 != carry)
+        {
+            prdt += carry + '0';
+        }
+#ifdef T_mulOneBit
+            cout << "before reverse, prdt = " <<  prdt << endl;
+#endif
+
+        // 将 prdt 反向
+        char aBit;
+        string::size_type forwardIx = 0;
+        string::size_type backwardIx = prdt.size() - 1;
+        while (forwardIx < backwardIx)
+        {
+            aBit = prdt[backwardIx];
+            prdt[backwardIx] = prdt[forwardIx];
+            prdt[forwardIx] = aBit;
+            ++forwardIx;
+            --backwardIx;
+        }
+
+        return prdt;
+    }
+
+    // 浮点尾数相加，相当于右对齐相加
+    string addBigInt(const string &num1, const string &num2)
+    {
+#ifdef T_addBigInt
+        cout << "in addBigInt: " << endl;
 #endif
         // 检查参数
         for (string::size_type ix = 0; ix != num1.size(); ++ix)
@@ -270,7 +362,7 @@ namespace n_big_float
             string zeros(lZeroNums, '0');
             sum = zeros + num2;
             longerNum = num1;
-#ifdef DEBUG
+#ifdef T_addBigInt
         cout << "sum = " << sum << endl;
 #endif
 
@@ -284,7 +376,7 @@ namespace n_big_float
         }
 
         int carry = 0;
-#ifdef DEBUG
+#ifdef T_addBigInt
         cout << "size = " << sum.size() << endl;
 #endif
         // 长度相同的两数相加
@@ -315,126 +407,88 @@ namespace n_big_float
         }
     }
 
-    // 尾数乘以一位整数
-    string BigFloat::mulOneBit(char bit)
-    {
-        if (bit > '9' || bit < '0')
-        {
-            return "";
-        }
-
-        int carry = 0;
-        bit -= '0';
-        string prdt;
-
-        for (string::const_reverse_iterator iter = digits.rbegin();
-                iter != digits.rend(); ++iter)
-        {
-#ifdef DEBUG
-            cout << *iter << endl;
-#endif
-            int bitPrdt = (*iter - '0') * bit + carry;
-            prdt += bitPrdt % 10 + '0';
-            carry = bitPrdt / 10;
-        }
-
-        if (0 != carry)
-        {
-            prdt += carry + '0';
-        }
-#ifdef DEBUG
-            cout << "before reverse, prdt = " <<  prdt << endl;
-#endif
-
-        // 将 prdt 反向
-        char aBit;
-        string::size_type forwardIx = 0;
-        string::size_type backwardIx = prdt.size() - 1;
-        while (forwardIx < backwardIx)
-        {
-            aBit = prdt[backwardIx];
-            prdt[backwardIx] = prdt[forwardIx];
-            prdt[forwardIx] = aBit;
-            ++forwardIx;
-            --backwardIx;
-        }
-
-        return prdt;
-    }
-
-
-    // 输入操作符重载
+    // 输出操作符重载
     ostream& operator<<(ostream& os, const BigFloat &bigNum)
     {
-        if (1 == bigNum.digits.size())
-        {
-            if ('-' == bigNum.sign && bigNum.digits != "0")
-            {
-                os << '-';
-            }
-            os << bigNum.digits << ".0";
+        const char sign = bigNum.sign;
+        const string digits = bigNum.digits;
+        const int exp = bigNum.exp;
 
-            if (bigNum.digits != "0" && bigNum.exp != 1)
-            {
-                os << " " << "E" << bigNum.exp - 1;
-            }
-
-            os << endl;
-        }
-        else if ("INF" == bigNum.digits)
+        if ("INF" == digits)
         {
-            os << bigNum.sign << "INF" << endl;
+            os << sign << "INF" << endl;
         }
+        //else if (1 == digits.size())
+        //{
+        //    if ('-' == sign && digits != "0")
+        //    {
+        //        os << '-';
+        //    }
+        //    os << digits << ".0";
+
+        //    if (digits != "0" && exp != 1)
+        //    {
+        //        os << " " << "E" << exp - 1;
+        //    }
+        //}
         else
         {
-            if ('-' == bigNum.sign)
+            if ('-' == sign)
             {
                 os << '-';
             }
 
-            // 输出标准科学表示法，如 3.456 E5
-            os << bigNum.digits[0] << "." << bigNum.digits.substr(1);
+           // // 输出标准科学表示法，如 3.456 E5
+           // os << digits[0] << "." << digits.substr(1);
 
-            if (bigNum.exp != 1)
+           // if (exp != 1)
+           // {
+           //     os << " " << "E" << exp - 1;
+           // }
+
+            // 输出常规表示法
+            if (exp <= 0)
             {
-                os << " " << "E" << bigNum.exp - 1;
+                string zeros(-exp, '0');
+                os << "0." << zeros << digits;
             }
-
-            os << endl;
+            else
+            {
+                if (exp > static_cast<int>(digits.size()))
+                {
+                    string zeros(exp - digits.size(), '0');
+                    os << digits << zeros;
+                }
+                else if (exp > static_cast<int>(digits.size()))
+                {
+                    os << digits.substr(0, exp) << "." << digits.substr(exp);
+                }
+                else
+                {
+                    os << digits;
+                }
+            }
         }
 
         return os;
     }
 
-    ///* 算术左移 */
-    //BigFloat& BigFloat::operator<<=(int shitfs)
-    //{
-    //    if (digits != "0" && digits != "INF" && shitfs != 0)
-    //    {
-    //        exp += shitfs;
+    istream &operator>>(istream &is, BigFloat &bigNum)
+    {
+        string num;
+        is >> num;
 
-    //        if (exp > MAX_EXP)
-    //        {
-    //            digits = "INF";
-    //            exp = 0;
-    //        }
-    //        else if (exp < MAX_EXP)
-    //        {
-    //            digits = "0";
-    //            exp = 0;
-    //        }
-    //    }
+        if (is)
+        {
+            if (!bigNum.formalize(num))
+            {
+                // 输入格式不对，设置流的错误状态
+                is.clear(istream::failbit);
+            }
+        }
 
-    //    return *this;
-    //}
-
-    //// 算术右移
-    //BigFloat& BigFloat::operator>>=(int shitfs)
-    //{
-    //    (*this) <<= -shitfs;
-    //    return *this;
-    //}
-
+        return is;
+    }
 
     bool operator==(const BigFloat &bigNum1, const BigFloat &bigNum2)
     {
@@ -455,23 +509,159 @@ namespace n_big_float
 
         return true;
     }
-
-    istream &operator>>(istream &is, BigFloat &bigNum)
+    // 两个大浮点数相乘，将两个尾数放大成整数，然后相乘
+    BigFloat operator*(const BigFloat &bigNum1, const BigFloat &bigNum2)
     {
-        string num;
-        is >> num;
+#ifdef T_opMul
+        cout << "num1: " << bigNum1 << endl;
+        cout << "num2: " << bigNum2 << endl;
+#endif
+        BigFloat prdtNum;
 
-        if (is)
+        if ("0" == bigNum1.digits || "0" == bigNum2.digits)
         {
-            if (!bigNum.formalize(num))
+            prdtNum.setSign('+');
+            prdtNum.setDigits("0");
+            prdtNum.setExp(0);
+            return prdtNum;
+        }
+        else if ("INF" == bigNum1.digits)
+        {
+            prdtNum.setSign(bigNum1.sign);
+            prdtNum.setDigits("INF");
+            prdtNum.setExp(0);
+            return prdtNum;
+        }
+        else if ("INF" == bigNum2.digits)
+        {
+            prdtNum.setSign(bigNum2.sign);
+            prdtNum.setDigits("INF");
+            prdtNum.setExp(0);
+            return prdtNum;
+        }
+
+        string prdt;
+
+        string::size_type ix = 0;
+        for (string::const_reverse_iterator iter = bigNum2.digits.rbegin();
+                iter != bigNum2.digits.rend(); ++iter)
+        {
+            string zeros(ix, '0');
+            prdt = addBigInt(prdt, bigNum1.mulOneBit(*iter) + zeros);
+            ++ix;
+        }
+#ifdef T_opMul
+        cout << "prdt = " << prdt << endl;
+#endif
+
+
+        // 检查是否全为0，若是，则去掉结尾的 0
+        string::size_type mantFstNotZeroIx;
+        for (mantFstNotZeroIx = 0; mantFstNotZeroIx < prdt.size(); 
+                ++mantFstNotZeroIx )
+        {
+            if (prdt[mantFstNotZeroIx] != 0)
             {
-                // 输入格式不对，设置流的错误状态
-                is.clear(istream::failbit);
+                break;
             }
         }
 
-        return is;
-    }
+        // 全 0
+        if (prdt.size() == mantFstNotZeroIx)
+        {
+            prdtNum.setDigits("0");
+            prdtNum.setSign('+');
+            prdtNum.setExp(0);
+        }
+        else
+        {
+            string::size_type backNotZeroIx = prdt.size() - 1;
+            for (backNotZeroIx = prdt.size() - 1; ; --backNotZeroIx)
+            {
+                if ('0' != prdt[backNotZeroIx])
+                {
+                    break;
+                }
+            }
+
+            // 由于按整数计算的，因而放大因子要减去
+            int prdtExp = bigNum1.exp + bigNum2.exp - bigNum1.digits.size() 
+                - bigNum2.digits.size();
+#ifdef T_opMul
+            cout << "num1.exp = " << bigNum1.exp << endl;
+            cout << "num2.exp = " << bigNum2.exp << endl;
+            cout << "num1.digits.size = " << bigNum1.digits.size() << endl;
+            cout << "num2.digits.size = " << bigNum2.digits.size() << endl;
+#endif
+
+            // 去掉结尾的 0 
+            prdtExp += prdt.size() - 1 - backNotZeroIx;
+            prdt = prdt.substr(mantFstNotZeroIx, 
+                    backNotZeroIx - mantFstNotZeroIx + 1);
+#ifdef T_opMul
+            cout << "mantFstNotZeroIx = " << mantFstNotZeroIx << endl;
+            cout << "backNotZeroIx = " << backNotZeroIx << endl;
+            cout << "prdt = " << prdt << endl;
+#endif
+
+#ifdef T_opMul
+            cout << "exp = " << prdtExp << endl;
+#endif
+
+            // 将整数缩小成小数
+            prdtExp += prdt.size();
+
+#ifdef T_opMul
+            cout << "exp after = " << prdtExp << endl;
+#endif
+            // 处理符号
+            if (bigNum1.sign == bigNum2.sign)
+            {
+                prdtNum.setSign('+');
+            }
+            else
+            {
+                prdtNum.setSign('-');
+            }
+
+
+            // 设置结果
+            if (prdtExp > BigFloat::MAX_EXP)
+            {
+                prdtNum.setExp(0);
+                prdtNum.setDigits("INF");
+            }
+            else if (prdtExp < -BigFloat::MAX_EXP)
+            {
+                prdtNum.setSign('+');
+                prdtNum.setExp(0);
+                prdtNum.setDigits("0");
+            }
+            else
+            {
+                // 处理尾数
+                if (prdt.size() > BigFloat::MAX_MANT_LEN)
+                {
+                     prdtNum.setDigits(prdt.substr(0, BigFloat::MAX_MANT_LEN));
+                }
+                else
+                {
+#ifdef T_opMul
+                    cout << "prdt = " << prdt << endl;
+#endif
+                    prdtNum.setDigits(prdt);
+#ifdef T_opMul
+                    cout << "result.digits = " << prdtNum.digits << endl;
+#endif
+                }
+
+                // 处理指数
+                prdtNum.setExp(prdtExp);
+            }
+        }
+
+        return prdtNum;
+    }   // end of operator*
 
 
 } // end of namespace

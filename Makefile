@@ -1,7 +1,7 @@
 .PHONE: all clean
 
 # variables definition
-CPPFLAGS = -c -Wall
+CPPFLAGS = -c -Wall -g
 COMM_FILES = debug.h
 
 # rules
