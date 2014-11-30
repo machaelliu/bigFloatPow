@@ -459,7 +459,7 @@ namespace n_big_float
                     string zeros(exp - digits.size(), '0');
                     os << digits << zeros;
                 }
-                else if (exp > static_cast<int>(digits.size()))
+                else if (exp < static_cast<int>(digits.size()))
                 {
                     os << digits.substr(0, exp) << "." << digits.substr(exp);
                 }
