@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include "big_float.h"
+#include "bigFloatMul.h"
 #include "debug.h"
 using namespace std;
 using namespace n_big_float;
@@ -17,7 +17,7 @@ int main()
     while (!cin)
     {
         cin.clear();
-        cerr << "not a valid float number, try again: "  << endl;
+        cerr << "not a valid float number, try again: ";
         getline(cin, line);
         cin >> num;
     }
@@ -30,9 +30,9 @@ int main()
     while (!cin || exp < 0)
     {
         cin.clear();
-        cerr << "not a valid non-negative integer, try again: "  << endl;
+        cerr << "not a valid non-negative integer, try again: ";
         getline(cin, line);
-        cin >> num;
+        cin >> exp;
     }
 
     // 开始计算
